@@ -20,9 +20,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     fs.createReadStream(filePath)
         .pipe(csvParser())
         .on('data', (row) => {
-            if (row['Visits'] && row['Visits'] !== '0.0') {
-                results.push(row);
-            }
+            results.push(row);
         })
         .on('end', () => {
             const totalRows = results.length;
