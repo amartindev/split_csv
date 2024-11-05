@@ -24,7 +24,7 @@ function App() {
         setLoading(true);
         setSuccessMessage(''); // Resetea el mensaje de éxito
 
-        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'; // Cambia a la URL del backend
+        const backendUrl = process.env.REACT_APP_BACKEND_URL; // Utiliza solo la URL del backend
 
         try {
             const response = await fetch(`${backendUrl}/upload`, {
