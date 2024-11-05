@@ -12,7 +12,7 @@ function App() {
     };
 
     const handleRowsChange = (e) => {
-        setRowsPerFile(e.target.value);
+        setRowsPerFile(Number(e.target.value)); // Convierte el valor a número
     };
 
     const handleSubmit = async (e) => {
@@ -51,7 +51,7 @@ function App() {
         <div>
             <h1>Upload CSV</h1>
             <form onSubmit={handleSubmit}>
-                <input type="file" onChange={handleFileChange} />
+                <input type="file" onChange={handleFileChange} accept=".csv" /> {/* Acepta solo archivos CSV */}
                 <input
                     type="number"
                     value={rowsPerFile}
