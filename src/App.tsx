@@ -4,7 +4,7 @@ function App() {
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [downloadUrls, setDownloadUrls] = useState([]); // Estado para múltiples URLs de descarga
-    const [rowsPerFile, setRowsPerFile] = useState();
+    const [rowsPerFile, setRowsPerFile] = useState(2); // Establece un valor mínimo por defecto
     const [successMessage, setSuccessMessage] = useState(''); // Estado para el mensaje de éxito
 
     const handleFileChange = (e) => {
@@ -19,13 +19,15 @@ function App() {
         e.preventDefault();
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('rowsPerFile', rowsPerFile);
+        formData.append('rowsPerFile', rowsPerFile - 1); // Resta 1 al número de filas
 
         setLoading(true);
         setSuccessMessage(''); // Resetea el mensaje de éxito
 
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001'; // Cambia a la URL del backend
+
         try {
-            const response = await fetch('http://localhost:3001/upload', {
+            const response = await fetch(`${backendUrl}/upload`, {
                 method: 'POST',
                 body: formData,
             });
@@ -36,7 +38,7 @@ function App() {
             setSuccessMessage(result.message); // Muestra el mensaje en la página
 
             // Genera las URLs de descarga para cada archivo generado
-            setDownloadUrls(result.filenames.map(filename => `http://localhost:3001/download/${filename}`));
+            setDownloadUrls(result.filenames.map(filename => `${backendUrl}/download/${filename}`));
         } catch (error) {
             console.error('Error uploading file:', error);
             setSuccessMessage('Error uploading file.'); // Muestra un mensaje de error en la página
