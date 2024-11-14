@@ -6,7 +6,7 @@ function App() {
     const [downloadUrls, setDownloadUrls] = useState([]); // Estado para múltiples URLs de descarga
     const [rowsPerFile, setRowsPerFile] = useState(2); // Establece un valor mínimo por defecto
     const [successMessage, setSuccessMessage] = useState(''); // Estado para el mensaje de éxito
-    const [errorMessage, setErrorMessage] = useState(''); // Estado para el mensaje de error
+    const [errorMessage, setErrorMessage] = useState(''); // Estado para los mensajes de error
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
@@ -34,17 +34,15 @@ function App() {
                 body: formData,
             });
 
-            // Verifica el código de estado y el cuerpo de la respuesta
-            console.log('Response Status:', response.status); // Muestra el estado de la respuesta
-            const responseBody = await response.text(); // Leemos la respuesta como texto
-            console.log('Response Body:', responseBody); // Imprime el cuerpo de la respuesta
-
+            // Verifica si la respuesta es exitosa
             if (!response.ok) {
-                throw new Error(`Server error: ${response.statusText}`);
+                const responseBody = await response.text(); // Captura el cuerpo de la respuesta
+                console.error('Error Response:', responseBody);
+                throw new Error(`Server error: ${responseBody}`);
             }
 
-            const result = JSON.parse(responseBody); // Convierte el cuerpo de la respuesta en un objeto JSON
-            setSuccessMessage(result.message); // Muestra el mensaje de éxito en la página
+            const result = await response.json();
+            setSuccessMessage(result.message); // Muestra el mensaje en la página
 
             // Genera las URLs de descarga para cada archivo generado
             setDownloadUrls(result.filenames.map(filename => `${backendUrl}/download/${filename}`));
@@ -60,7 +58,7 @@ function App() {
         <div>
             <h1>Upload CSV</h1>
             <form onSubmit={handleSubmit}>
-                <input type="file" onChange={handleFileChange} accept=".csv" /> {/* Acepta solo archivos CSV */}
+                <input type="file" onChange={handleFileChange} accept=".csv" />
                 <input
                     type="number"
                     value={rowsPerFile}
@@ -73,8 +71,8 @@ function App() {
                 </button>
             </form>
             {loading && <p>Uploading file...</p>}
-            {successMessage && <p>{successMessage}</p>} {/* Muestra el mensaje de éxito */}
-            {errorMessage && <p>{errorMessage}</p>} {/* Muestra el mensaje de error */}
+            {successMessage && <p>{successMessage}</p>}
+            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>} {/* Mensaje de error */}
             {downloadUrls.length > 0 && (
                 <div>
                     <h2>Download Files</h2>
