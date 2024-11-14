@@ -6,7 +6,6 @@ function App() {
     const [downloadUrls, setDownloadUrls] = useState([]); // Estado para múltiples URLs de descarga
     const [rowsPerFile, setRowsPerFile] = useState(2); // Establece un valor mínimo por defecto
     const [successMessage, setSuccessMessage] = useState(''); // Estado para el mensaje de éxito
-    const [errorMessage, setErrorMessage] = useState(''); // Estado para los mensajes de error
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
@@ -24,31 +23,29 @@ function App() {
 
         setLoading(true);
         setSuccessMessage(''); // Resetea el mensaje de éxito
-        setErrorMessage(''); // Resetea el mensaje de error
 
-        const backendUrl = process.env.REACT_APP_BACKEND_URL; // Utiliza solo la URL del backend
+        const backendUrl = process.env.REACT_APP_BACKEND_URL; // URL del backend desde el .env
 
         try {
+            console.log('Enviando datos al backend:', formData); // Verifica qué se está enviando
             const response = await fetch(`${backendUrl}/upload`, {
                 method: 'POST',
                 body: formData,
             });
 
-            // Verifica si la respuesta es exitosa
-            if (!response.ok) {
-                const responseBody = await response.text(); // Captura el cuerpo de la respuesta
-                console.error('Error Response:', responseBody);
-                throw new Error(`Server error: ${responseBody}`);
-            }
-
+            console.log('Response status:', response.status); // Verifica el código de respuesta
             const result = await response.json();
-            setSuccessMessage(result.message); // Muestra el mensaje en la página
+            console.log('Response body:', result); // Verifica el cuerpo de la respuesta
 
-            // Genera las URLs de descarga para cada archivo generado
-            setDownloadUrls(result.filenames.map(filename => `${backendUrl}/download/${filename}`));
+            if (response.ok) {
+                setSuccessMessage(result.message);
+                setDownloadUrls(result.filenames.map(filename => `${backendUrl}/download/${filename}`));
+            } else {
+                setSuccessMessage('Error uploading file.');
+            }
         } catch (error) {
             console.error('Error uploading file:', error);
-            setErrorMessage('Error uploading file. Please try again.'); // Muestra un mensaje de error en la página
+            setSuccessMessage('Error uploading file.');
         } finally {
             setLoading(false);
         }
@@ -58,7 +55,7 @@ function App() {
         <div>
             <h1>Upload CSV</h1>
             <form onSubmit={handleSubmit}>
-                <input type="file" onChange={handleFileChange} accept=".csv" />
+                <input type="file" onChange={handleFileChange} accept=".csv" /> {/* Acepta solo archivos CSV */}
                 <input
                     type="number"
                     value={rowsPerFile}
@@ -71,8 +68,7 @@ function App() {
                 </button>
             </form>
             {loading && <p>Uploading file...</p>}
-            {successMessage && <p>{successMessage}</p>}
-            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>} {/* Mensaje de error */}
+            {successMessage && <p>{successMessage}</p>} {/* Muestra el mensaje de éxito o error */}
             {downloadUrls.length > 0 && (
                 <div>
                     <h2>Download Files</h2>
